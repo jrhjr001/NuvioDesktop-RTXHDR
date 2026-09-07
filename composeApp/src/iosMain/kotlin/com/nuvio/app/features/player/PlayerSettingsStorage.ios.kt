@@ -95,6 +95,7 @@ actual object PlayerSettingsStorage {
     private const val iosSaturationKey = "ios_saturation"
     private const val iosGammaKey = "ios_gamma"
     private const val nvidiaRtxSuperResolutionEnabledKey = "nvidia_rtx_super_resolution_enabled"
+    private const val nvidiaRtxVideoHdrEnabledKey = "nvidia_rtx_video_hdr_enabled"
     private val syncKeys = listOf(
         showLoadingOverlayKey,
         showPlayerLoadingStatusKey,
@@ -104,6 +105,7 @@ actual object PlayerSettingsStorage {
         holdToSpeedEnabledKey,
         holdToSpeedValueKey,
         nvidiaRtxSuperResolutionEnabledKey,
+        nvidiaRtxVideoHdrEnabledKey,
         touchGesturesEnabledKey,
         externalPlayerEnabledKey,
         externalPlayerForwardSubtitlesKey,
@@ -1021,6 +1023,20 @@ actual object PlayerSettingsStorage {
         NSUserDefaults.standardUserDefaults.setBool(enabled, forKey = ProfileScopedKey.of(nvidiaRtxSuperResolutionEnabledKey))
     }
 
+    actual fun loadNvidiaRtxVideoHdrEnabled(): Boolean? {
+        val defaults = NSUserDefaults.standardUserDefaults
+        val key = ProfileScopedKey.of(nvidiaRtxVideoHdrEnabledKey)
+        return if (defaults.objectForKey(key) != null) {
+            defaults.boolForKey(key)
+        } else {
+            null
+        }
+    }
+
+    actual fun saveNvidiaRtxVideoHdrEnabled(enabled: Boolean) {
+        NSUserDefaults.standardUserDefaults.setBool(enabled, forKey = ProfileScopedKey.of(nvidiaRtxVideoHdrEnabledKey))
+    }
+
     actual fun exportToSyncPayload(): JsonObject = buildJsonObject {
         loadShowLoadingOverlay()?.let { put(showLoadingOverlayKey, encodeSyncBoolean(it)) }
         loadShowPlayerLoadingStatus()?.let { put(showPlayerLoadingStatusKey, encodeSyncBoolean(it)) }
@@ -1096,6 +1112,7 @@ actual object PlayerSettingsStorage {
         loadIosSaturation()?.let { put(iosSaturationKey, encodeSyncInt(it)) }
         loadIosGamma()?.let { put(iosGammaKey, encodeSyncInt(it)) }
         loadNvidiaRtxSuperResolutionEnabled()?.let { put(nvidiaRtxSuperResolutionEnabledKey, encodeSyncBoolean(it)) }
+        loadNvidiaRtxVideoHdrEnabled()?.let { put(nvidiaRtxVideoHdrEnabledKey, encodeSyncBoolean(it)) }
     }
 
     actual fun replaceFromSyncPayload(payload: JsonObject) {
@@ -1177,5 +1194,6 @@ actual object PlayerSettingsStorage {
         payload.decodeSyncInt(iosSaturationKey)?.let(::saveIosSaturation)
         payload.decodeSyncInt(iosGammaKey)?.let(::saveIosGamma)
         payload.decodeSyncBoolean(nvidiaRtxSuperResolutionEnabledKey)?.let(::saveNvidiaRtxSuperResolutionEnabled)
+        payload.decodeSyncBoolean(nvidiaRtxVideoHdrEnabledKey)?.let(::saveNvidiaRtxVideoHdrEnabled)
     }
 }
