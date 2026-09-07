@@ -977,6 +977,14 @@ private fun PlaybackSettingsSection(
                         isTablet = isTablet,
                         onCheckedChange = PlayerSettingsRepository::setNvidiaRtxSuperResolutionEnabled,
                     )
+                    SettingsGroupDivider(isTablet = isTablet)
+                    SettingsSwitchRow(
+                        title = stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr),
+                        description = stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr_desc),
+                        checked = autoPlayPlayerSettings.nvidiaRtxVideoHdrEnabled,
+                        isTablet = isTablet,
+                        onCheckedChange = PlayerSettingsRepository::setNvidiaRtxVideoHdrEnabled,
+                    )
                 }
             }
         }
