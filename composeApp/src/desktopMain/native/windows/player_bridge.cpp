@@ -483,6 +483,23 @@ std::wstring webViewUserDataDirectory() {
     return directory;
 }
 
+// Diagnostic log for the NVIDIA RTX video-processing filter (VSR/HDR): mpv logs the
+// exact reason those NVAPI extensions fail or aren't supported by the driver, but
+// nothing else in this bridge surfaces mpv's log, so write it straight to a file.
+std::string nvidiaRtxDiagnosticsLogPath() {
+    PWSTR localAppData = nullptr;
+    HRESULT result = SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, nullptr, &localAppData);
+    if (FAILED(result) || !localAppData) {
+        if (localAppData) CoTaskMemFree(localAppData);
+        return std::string();
+    }
+    std::wstring directory(localAppData);
+    CoTaskMemFree(localAppData);
+    directory += L"\\Nuvio\\Logs";
+    SHCreateDirectoryExW(nullptr, directory.c_str(), nullptr);
+    return toUtf8(directory + L"\\mpv-nvidia-rtx.log");
+}
+
 struct MpvApi {
     using mpv_create_fn = mpv_handle *(*)();
     using mpv_initialize_fn = int (*)(mpv_handle *);
@@ -1612,6 +1629,10 @@ private:
                 setMpvOptionStringLocked("gpu-api", "d3d11");
                 setMpvOptionStringLocked("hwdec", "d3d11va");
                 setMpvOptionStringLocked("d3d11-adapter", "NVIDIA");
+                std::string diagnosticsLogPath = nvidiaRtxDiagnosticsLogPath();
+                if (!diagnosticsLogPath.empty()) {
+                    setMpvOptionStringLocked("log-file", diagnosticsLogPath.c_str());
+                }
             } else {
                 setMpvOptionStringLocked("gpu-api", "auto");
                 setMpvOptionStringLocked("hwdec", "auto");

@@ -95,7 +95,14 @@ data class PlayerSettingsUiState(
     val iosGamma: Int = 0,
     val nvidiaRtxSuperResolutionEnabled: Boolean = false,
     val nvidiaRtxVideoHdrEnabled: Boolean = false,
-)
+) {
+    // Mirrors PlayerSettingsRepository.nvidiaRtxVideoHdrPrerequisitesMet(): RTX HDR only runs
+    // through Nuvio's own libmpv pipeline, so it has no effect when playback is handed off to
+    // an external player. (Hardware decoding is not required: mpv's d3d11vpp filter auto-
+    // uploads software-decoded frames to the D3D11 surface it needs.)
+    val nvidiaRtxVideoHdrPrerequisitesMet: Boolean
+        get() = !externalPlayerEnabled
+}
 
 object PlayerSettingsRepository {
     private val _uiState = MutableStateFlow(PlayerSettingsUiState())
@@ -452,6 +459,10 @@ object PlayerSettingsRepository {
             return
         }
         externalPlayerEnabled = normalizedEnabled
+        if (normalizedEnabled && nvidiaRtxVideoHdrEnabled) {
+            nvidiaRtxVideoHdrEnabled = false
+            PlayerSettingsStorage.saveNvidiaRtxVideoHdrEnabled(false)
+        }
         publish()
         if (AppFeaturePolicy.externalPlayerSupported) {
             PlayerSettingsStorage.saveExternalPlayerEnabled(normalizedEnabled)
@@ -786,11 +797,17 @@ object PlayerSettingsRepository {
 
     fun setNvidiaRtxVideoHdrEnabled(enabled: Boolean) {
         ensureLoaded()
-        if (nvidiaRtxVideoHdrEnabled == enabled) return
-        nvidiaRtxVideoHdrEnabled = enabled
+        val normalizedEnabled = enabled && nvidiaRtxVideoHdrPrerequisitesMet()
+        if (nvidiaRtxVideoHdrEnabled == normalizedEnabled) return
+        nvidiaRtxVideoHdrEnabled = normalizedEnabled
         publish()
-        PlayerSettingsStorage.saveNvidiaRtxVideoHdrEnabled(enabled)
+        PlayerSettingsStorage.saveNvidiaRtxVideoHdrEnabled(normalizedEnabled)
     }
+
+    // RTX HDR only runs through Nuvio's own libmpv pipeline, so it has no effect when
+    // playback is handed off to an external player. (Hardware decoding is not required:
+    // mpv's d3d11vpp filter auto-uploads software-decoded frames to the D3D11 surface it needs.)
+    private fun nvidiaRtxVideoHdrPrerequisitesMet(): Boolean = !externalPlayerEnabled
 
     fun setLibassRenderType(renderType: String) {
         ensureLoaded()

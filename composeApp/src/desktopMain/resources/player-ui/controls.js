@@ -291,6 +291,9 @@ let state = {
   nextEpisodePlayable: false,
   showSubmitIntro: false,
   showVideoSettings: false,
+  nvidiaRtxVideoHdrEnabled: false,
+  nvidiaRtxVideoHdrOnToastLabel: "RTX Video HDR: On",
+  nvidiaRtxVideoHdrOffToastLabel: "RTX Video HDR: Off",
   showSources: false,
   showEpisodes: false,
   showExternalPlayer: false,
@@ -484,6 +487,37 @@ const showPlayerToast = (message, { durationMs = playerToastDurationMs, icon = n
     playerToastTimer = window.setTimeout(() => hidePlayerToast(token), durationMs);
   }
 };
+
+// Toggling RTX VSR/HDR tears down and recreates this entire WebView (mpv needs a fresh
+// gpu-api/hwdec/vf setup), which wipes any toast shown before the reload. Persist the
+// pending message across that reload via localStorage (the WebView2 profile directory is
+// reused for every recreation) and show it once the new page comes back up.
+const nvidiaRtxHdrPendingToastKey = "nuvio.pendingNvidiaRtxHdrToast";
+const queueNvidiaRtxHdrToastAcrossReload = enabled => {
+  try {
+    window.localStorage.setItem(nvidiaRtxHdrPendingToastKey, enabled ? "on" : "off");
+  } catch (_error) {
+    // Ignore storage failures (e.g. disabled storage) - the toggle itself still applies.
+  }
+};
+const showPendingNvidiaRtxHdrToastIfAny = () => {
+  let pending = null;
+  try {
+    pending = window.localStorage.getItem(nvidiaRtxHdrPendingToastKey);
+    if (pending) window.localStorage.removeItem(nvidiaRtxHdrPendingToastKey);
+  } catch (_error) {
+    return;
+  }
+  if (!pending) return;
+  window.setTimeout(() => {
+    showPlayerToast(
+      pending === "on"
+        ? (state.nvidiaRtxVideoHdrOnToastLabel || "RTX Video HDR: On")
+        : (state.nvidiaRtxVideoHdrOffToastLabel || "RTX Video HDR: Off"),
+    );
+  }, 500);
+};
+showPendingNvidiaRtxHdrToastIfAny();
 
 const settingToastLabel = command => {
   if (command === "resize") return state.resizeModeLabel || "Fit";
@@ -3265,6 +3299,14 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
     focusShortcutRoot();
     togglePlayerFullscreen();
+    return;
+  }
+  const isToggleRtxHdrShortcut = event.code === "KeyH" && event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey;
+  if (isToggleRtxHdrShortcut && !isTextEntryTarget(event.target)) {
+    clearSpaceHoldTimerAndStopSpeedBoost();
+    event.preventDefault();
+    queueNvidiaRtxHdrToastAcrossReload(!state.nvidiaRtxVideoHdrEnabled);
+    send("toggleNvidiaRtxVideoHdr", 0);
     return;
   }
   if (event.metaKey || event.ctrlKey || event.altKey || event.key === "Alt" || event.key === "Control" || event.key === "Meta") {
