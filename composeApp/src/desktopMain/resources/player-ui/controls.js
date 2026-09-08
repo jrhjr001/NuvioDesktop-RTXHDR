@@ -298,6 +298,8 @@ let state = {
   nvidiaRtxVideoHdrEnabled: false,
   nvidiaRtxVideoHdrOnToastLabel: "RTX Video HDR: On",
   nvidiaRtxVideoHdrOffToastLabel: "RTX Video HDR: Off",
+  nvidiaRtxSuperResolutionScale: 2,
+  nvidiaRtxSuperResolutionScaleToastFormat: "RTX VSR: %sx",
   showSources: false,
   showEpisodes: false,
   showExternalPlayer: false,
@@ -526,36 +528,48 @@ const showPlayerToast = (message, { durationMs = playerToastDurationMs, icon = n
   }
 };
 
-// Toggling RTX VSR/HDR tears down and recreates this entire WebView (mpv needs a fresh
-// gpu-api/hwdec/vf setup), which wipes any toast shown before the reload. Persist the
-// pending message across that reload via localStorage (the WebView2 profile directory is
-// reused for every recreation) and show it once the new page comes back up.
-const nvidiaRtxHdrPendingToastKey = "nuvio.pendingNvidiaRtxHdrToast";
-const queueNvidiaRtxHdrToastAcrossReload = enabled => {
+// Toggling RTX VSR/HDR (including cycling the VSR scale) tears down and recreates this
+// entire WebView (mpv needs a fresh gpu-api/hwdec/vf setup), which wipes any toast shown
+// before the reload. Persist the pending message text across that reload via localStorage
+// (the WebView2 profile directory is reused for every recreation) and show it once the new
+// page comes back up.
+const queuePlayerReloadToast = (storageKey, message) => {
   try {
-    window.localStorage.setItem(nvidiaRtxHdrPendingToastKey, enabled ? "on" : "off");
+    window.localStorage.setItem(storageKey, message);
   } catch (_error) {
-    // Ignore storage failures (e.g. disabled storage) - the toggle itself still applies.
+    // Ignore storage failures (e.g. disabled storage) - the underlying change still applies.
   }
 };
-const showPendingNvidiaRtxHdrToastIfAny = () => {
+const showPendingPlayerReloadToastIfAny = storageKey => {
   let pending = null;
   try {
-    pending = window.localStorage.getItem(nvidiaRtxHdrPendingToastKey);
-    if (pending) window.localStorage.removeItem(nvidiaRtxHdrPendingToastKey);
+    pending = window.localStorage.getItem(storageKey);
+    if (pending) window.localStorage.removeItem(storageKey);
   } catch (_error) {
     return;
   }
   if (!pending) return;
-  window.setTimeout(() => {
-    showPlayerToast(
-      pending === "on"
-        ? (state.nvidiaRtxVideoHdrOnToastLabel || "RTX Video HDR: On")
-        : (state.nvidiaRtxVideoHdrOffToastLabel || "RTX Video HDR: Off"),
-    );
-  }, 500);
+  window.setTimeout(() => showPlayerToast(pending), 500);
 };
-showPendingNvidiaRtxHdrToastIfAny();
+
+const nvidiaRtxHdrPendingToastKey = "nuvio.pendingNvidiaRtxHdrToast";
+const queueNvidiaRtxHdrToastAcrossReload = enabled => {
+  queuePlayerReloadToast(
+    nvidiaRtxHdrPendingToastKey,
+    enabled
+      ? (state.nvidiaRtxVideoHdrOnToastLabel || "RTX Video HDR: On")
+      : (state.nvidiaRtxVideoHdrOffToastLabel || "RTX Video HDR: Off"),
+  );
+};
+
+const nvidiaRtxSuperResolutionScalePendingToastKey = "nuvio.pendingNvidiaRtxSuperResolutionScaleToast";
+const queueNvidiaRtxSuperResolutionScaleToastAcrossReload = scale => {
+  const format = state.nvidiaRtxSuperResolutionScaleToastFormat || "RTX VSR: %sx";
+  queuePlayerReloadToast(nvidiaRtxSuperResolutionScalePendingToastKey, format.replace("%s", String(scale)));
+};
+
+showPendingPlayerReloadToastIfAny(nvidiaRtxHdrPendingToastKey);
+showPendingPlayerReloadToastIfAny(nvidiaRtxSuperResolutionScalePendingToastKey);
 
 const settingToastLabel = command => {
   if (command === "resize") return state.resizeModeLabel || "Fit";
@@ -3395,6 +3409,16 @@ document.addEventListener("keydown", event => {
     event.preventDefault();
     queueNvidiaRtxHdrToastAcrossReload(!state.nvidiaRtxVideoHdrEnabled);
     send("toggleNvidiaRtxVideoHdr", 0);
+    return;
+  }
+  const isCycleRtxVsrScaleShortcut = event.code === "KeyV" && event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey;
+  if (isCycleRtxVsrScaleShortcut && !isTextEntryTarget(event.target)) {
+    clearSpaceHoldTimerAndStopSpeedBoost();
+    event.preventDefault();
+    const currentScale = Number(state.nvidiaRtxSuperResolutionScale) || 2;
+    const nextScale = currentScale === 2 ? 3 : currentScale === 3 ? 4 : 2;
+    queueNvidiaRtxSuperResolutionScaleToastAcrossReload(nextScale);
+    send("cycleNvidiaRtxSuperResolutionScale", 0);
     return;
   }
   if (event.metaKey || event.ctrlKey || event.altKey || event.key === "Alt" || event.key === "Control" || event.key === "Meta") {
