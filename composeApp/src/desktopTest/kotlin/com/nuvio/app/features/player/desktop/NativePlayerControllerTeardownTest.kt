@@ -14,7 +14,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-private val failNativeCreate: NativePlayerCreate = { _, _, _, _, _, _, _, _, _, _ ->
+private val failNativeCreate: NativePlayerCreate = { _, _, _, _, _, _, _, _, _, _, _ ->
     error("native create must not run in lifecycle unit tests")
 }
 
@@ -52,6 +52,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = {},
         )
@@ -114,6 +115,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = {},
         )
@@ -127,6 +129,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = {},
         )
@@ -177,6 +180,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { errors.incrementAndGet() },
         )
@@ -238,6 +242,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = {},
         )
@@ -256,6 +261,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { replacementErrors.incrementAndGet() },
         )
@@ -299,6 +305,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { errors.incrementAndGet() },
         )
@@ -337,6 +344,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { errors.incrementAndGet() },
         )
@@ -364,6 +372,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = {},
         )
@@ -434,6 +443,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { retryError.countDown() },
         )
@@ -481,6 +491,7 @@ class NativePlayerControllerTeardownTest {
             initialPositionMs = 0L,
             decoderPriority = 0,
             nvidiaRtxSuperResolutionEnabled = false,
+            nvidiaRtxSuperResolutionScale = 2,
             nvidiaRtxVideoHdrEnabled = false,
             onError = { replacementError.countDown() },
         )

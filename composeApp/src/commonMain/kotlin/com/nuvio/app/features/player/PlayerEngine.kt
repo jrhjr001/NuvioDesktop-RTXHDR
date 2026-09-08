@@ -211,6 +211,8 @@ data class PlayerControlsState(
     val nvidiaRtxVideoHdrEnabled: Boolean = false,
     val nvidiaRtxVideoHdrOnToastLabel: String = "RTX Video HDR: On",
     val nvidiaRtxVideoHdrOffToastLabel: String = "RTX Video HDR: Off",
+    val nvidiaRtxSuperResolutionScale: Int = 2,
+    val nvidiaRtxSuperResolutionScaleToastFormat: String = "RTX VSR: %sx",
     val showSources: Boolean = false,
     val showEpisodes: Boolean = false,
     val showExternalPlayer: Boolean = false,

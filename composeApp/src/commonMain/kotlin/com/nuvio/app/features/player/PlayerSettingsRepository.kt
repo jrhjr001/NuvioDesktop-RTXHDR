@@ -96,6 +96,7 @@ data class PlayerSettingsUiState(
     val iosSaturation: Int = 0,
     val iosGamma: Int = 0,
     val nvidiaRtxSuperResolutionEnabled: Boolean = false,
+    val nvidiaRtxSuperResolutionScale: Int = 2,
     val nvidiaRtxVideoHdrEnabled: Boolean = false,
 ) {
     // Mirrors PlayerSettingsRepository.nvidiaRtxVideoHdrPrerequisitesMet(): RTX HDR only runs
@@ -174,6 +175,7 @@ object PlayerSettingsRepository {
     private var iosSaturation = 0
     private var iosGamma = 0
     private var nvidiaRtxSuperResolutionEnabled = false
+    private var nvidiaRtxSuperResolutionScale = 2
     private var nvidiaRtxVideoHdrEnabled = false
 
     fun ensureLoaded() {
@@ -250,6 +252,7 @@ object PlayerSettingsRepository {
         iosSaturation = 0
         iosGamma = 0
         nvidiaRtxSuperResolutionEnabled = false
+        nvidiaRtxSuperResolutionScale = 2
         nvidiaRtxVideoHdrEnabled = false
         publish()
     }
@@ -401,6 +404,7 @@ object PlayerSettingsRepository {
         iosSaturation = PlayerSettingsStorage.loadIosSaturation() ?: 0
         iosGamma = PlayerSettingsStorage.loadIosGamma() ?: 0
         nvidiaRtxSuperResolutionEnabled = PlayerSettingsStorage.loadNvidiaRtxSuperResolutionEnabled() ?: false
+        nvidiaRtxSuperResolutionScale = PlayerSettingsStorage.loadNvidiaRtxSuperResolutionScale()?.takeIf { it in 2..4 } ?: 2
         nvidiaRtxVideoHdrEnabled = PlayerSettingsStorage.loadNvidiaRtxVideoHdrEnabled() ?: false
         publish()
     }
@@ -819,6 +823,15 @@ object PlayerSettingsRepository {
         PlayerSettingsStorage.saveNvidiaRtxSuperResolutionEnabled(enabled)
     }
 
+    fun setNvidiaRtxSuperResolutionScale(scale: Int) {
+        ensureLoaded()
+        val normalizedScale = scale.coerceIn(2, 4)
+        if (nvidiaRtxSuperResolutionScale == normalizedScale) return
+        nvidiaRtxSuperResolutionScale = normalizedScale
+        publish()
+        PlayerSettingsStorage.saveNvidiaRtxSuperResolutionScale(normalizedScale)
+    }
+
     fun setNvidiaRtxVideoHdrEnabled(enabled: Boolean) {
         ensureLoaded()
         val normalizedEnabled = enabled && nvidiaRtxVideoHdrPrerequisitesMet()
@@ -1071,6 +1084,7 @@ object PlayerSettingsRepository {
             iosSaturation = iosSaturation,
             iosGamma = iosGamma,
             nvidiaRtxSuperResolutionEnabled = nvidiaRtxSuperResolutionEnabled,
+            nvidiaRtxSuperResolutionScale = nvidiaRtxSuperResolutionScale,
             nvidiaRtxVideoHdrEnabled = nvidiaRtxVideoHdrEnabled,
         )
     }

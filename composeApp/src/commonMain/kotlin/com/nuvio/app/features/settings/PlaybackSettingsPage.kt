@@ -307,6 +307,7 @@ private fun PlaybackSettingsSection(
     var showPlaybackEngineDialog by remember { mutableStateOf(false) }
     var showLibmpvVideoOutputDialog by remember { mutableStateOf(false) }
     var showDecoderPriorityDialog by remember { mutableStateOf(false) }
+    var showNvidiaRtxSuperResolutionScaleDialog by remember { mutableStateOf(false) }
     var showHoldToSpeedValueDialog by remember { mutableStateOf(false) }
     var showIosAudioOutputDialog by remember { mutableStateOf(false) }
     var showIosHardwareDecoderDialog by remember { mutableStateOf(false) }
@@ -1000,6 +1001,14 @@ private fun PlaybackSettingsSection(
                         onCheckedChange = PlayerSettingsRepository::setNvidiaRtxSuperResolutionEnabled,
                     )
                     SettingsGroupDivider(isTablet = isTablet)
+                    SettingsNavigationRow(
+                        title = stringResource(Res.string.settings_playback_nvidia_rtx_super_resolution_scale),
+                        description = nvidiaRtxSuperResolutionScaleLabel(autoPlayPlayerSettings.nvidiaRtxSuperResolutionScale),
+                        enabled = autoPlayPlayerSettings.nvidiaRtxSuperResolutionEnabled,
+                        isTablet = isTablet,
+                        onClick = { showNvidiaRtxSuperResolutionScaleDialog = true },
+                    )
+                    SettingsGroupDivider(isTablet = isTablet)
                     SettingsSwitchRow(
                         title = stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr),
                         description = if (autoPlayPlayerSettings.nvidiaRtxVideoHdrPrerequisitesMet) {
@@ -1543,6 +1552,17 @@ private fun PlaybackSettingsSection(
                 showDecoderPriorityDialog = false
             },
             onDismiss = { showDecoderPriorityDialog = false },
+        )
+    }
+
+    if (showNvidiaRtxSuperResolutionScaleDialog) {
+        NvidiaRtxSuperResolutionScaleDialog(
+            selectedScale = autoPlayPlayerSettings.nvidiaRtxSuperResolutionScale,
+            onScaleSelected = { scale ->
+                PlayerSettingsRepository.setNvidiaRtxSuperResolutionScale(scale)
+                showNvidiaRtxSuperResolutionScaleDialog = false
+            },
+            onDismiss = { showNvidiaRtxSuperResolutionScaleDialog = false },
         )
     }
 
@@ -3632,6 +3652,108 @@ private fun decoderPriorityRes(priority: Int): StringResource = when (priority) 
 
 @Composable
 private fun decoderPriorityLabel(priority: Int): String = stringResource(decoderPriorityRes(priority))
+
+private fun nvidiaRtxSuperResolutionScaleRes(scale: Int): StringResource = when (scale) {
+    2 -> Res.string.settings_playback_nvidia_rtx_super_resolution_scale_2x
+    3 -> Res.string.settings_playback_nvidia_rtx_super_resolution_scale_3x
+    4 -> Res.string.settings_playback_nvidia_rtx_super_resolution_scale_4x
+    else -> Res.string.settings_playback_nvidia_rtx_super_resolution_scale_2x
+}
+
+@Composable
+private fun nvidiaRtxSuperResolutionScaleLabel(scale: Int): String =
+    stringResource(nvidiaRtxSuperResolutionScaleRes(scale))
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun NvidiaRtxSuperResolutionScaleDialog(
+    selectedScale: Int,
+    onScaleSelected: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val options = listOf(
+        2 to Res.string.settings_playback_nvidia_rtx_super_resolution_scale_2x,
+        3 to Res.string.settings_playback_nvidia_rtx_super_resolution_scale_3x,
+        4 to Res.string.settings_playback_nvidia_rtx_super_resolution_scale_4x,
+    )
+
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    text = stringResource(Res.string.settings_playback_nvidia_rtx_super_resolution_scale_dialog),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold,
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    options.forEach { (scale, labelRes) ->
+                        val isSelected = scale == selectedScale
+                        val containerColor = if (isSelected) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                        }
+
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onScaleSelected(scale) },
+                            shape = RoundedCornerShape(12.dp),
+                            color = containerColor,
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(labelRes),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Box(
+                                    modifier = Modifier.size(24.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(Res.string.settings_playback_nvidia_rtx_super_resolution_scale_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
 
 private fun StreamAutoPlaySource.labelRes(pluginsEnabled: Boolean): StringResource = when (this) {
     StreamAutoPlaySource.ALL_SOURCES ->
