@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import nuvio.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 private val playerControlsLog = Logger.withTag("PlayerControls")
@@ -269,6 +270,9 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         unlockLabel = stringResource(Res.string.compose_player_unlock_controls),
         submitIntroLabel = stringResource(Res.string.submit_intro_action),
         videoSettingsLabel = stringResource(Res.string.player_action_video_settings),
+        nvidiaRtxVideoHdrEnabled = playerSettingsUiState.nvidiaRtxVideoHdrEnabled,
+        nvidiaRtxVideoHdrOnToastLabel = stringResource(Res.string.player_nvidia_rtx_video_hdr_toast_on),
+        nvidiaRtxVideoHdrOffToastLabel = stringResource(Res.string.player_nvidia_rtx_video_hdr_toast_off),
         tapToUnlockLabel = stringResource(Res.string.compose_player_tap_to_unlock),
         playbackErrorTitle = stringResource(Res.string.compose_player_playback_error),
         playbackErrorMessage = errorMessage.orEmpty(),
@@ -1017,6 +1021,19 @@ private fun PlayerScreenRuntime.handlePlayerControlsEvent(type: String, value: D
             PlayerSettingsRepository.setSubtitleStyle(subtitleStyle.copy(textColor = subtitleStyle.textColor.copy(alpha = alpha)))
         }
         "subtitleStyleReset" -> PlayerSettingsRepository.setSubtitleStyle(SubtitleStyleState.DEFAULT)
+        "toggleNvidiaRtxVideoHdr" -> {
+            val nextEnabled = !playerSettingsUiState.nvidiaRtxVideoHdrEnabled
+            if (nextEnabled && !playerSettingsUiState.nvidiaRtxVideoHdrPrerequisitesMet) {
+                // Blocked: no player reattach will happen, so show the explanation on this
+                // same page immediately instead of the reload-surviving toast used below.
+                scope.launch {
+                    playerNotificationMessage = getString(Res.string.settings_playback_nvidia_rtx_video_hdr_requirements)
+                    playerNotificationToken += 1L
+                }
+            } else {
+                PlayerSettingsRepository.setNvidiaRtxVideoHdrEnabled(nextEnabled)
+            }
+        }
         "parentalGuideComplete" -> {
             showParentalGuide = false
         }

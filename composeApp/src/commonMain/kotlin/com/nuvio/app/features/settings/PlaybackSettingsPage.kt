@@ -980,8 +980,13 @@ private fun PlaybackSettingsSection(
                     SettingsGroupDivider(isTablet = isTablet)
                     SettingsSwitchRow(
                         title = stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr),
-                        description = stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr_desc),
+                        description = if (autoPlayPlayerSettings.nvidiaRtxVideoHdrPrerequisitesMet) {
+                            stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr_desc)
+                        } else {
+                            stringResource(Res.string.settings_playback_nvidia_rtx_video_hdr_requirements)
+                        },
                         checked = autoPlayPlayerSettings.nvidiaRtxVideoHdrEnabled,
+                        enabled = autoPlayPlayerSettings.nvidiaRtxVideoHdrPrerequisitesMet,
                         isTablet = isTablet,
                         onCheckedChange = PlayerSettingsRepository::setNvidiaRtxVideoHdrEnabled,
                     )
