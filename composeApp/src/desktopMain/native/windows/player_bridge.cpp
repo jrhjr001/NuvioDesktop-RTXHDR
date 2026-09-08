@@ -867,6 +867,7 @@ public:
         JavaVM *vm,
         int decoderPriority,
         bool nvidiaRtxSuperResolutionEnabled,
+        int nvidiaRtxSuperResolutionScale,
         bool nvidiaRtxVideoHdrEnabled,
         jobject sink,
         jmethodID method
@@ -883,8 +884,8 @@ public:
         auto initState = std::make_shared<InitializationState>();
         auto self = shared_from_this();
         uiThread = std::thread(
-            [self, sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxVideoHdrEnabled, initState]() {
-                self->runNativeUiThread(sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxVideoHdrEnabled, initState);
+            [self, sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxSuperResolutionScale, nvidiaRtxVideoHdrEnabled, initState]() {
+                self->runNativeUiThread(sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxSuperResolutionScale, nvidiaRtxVideoHdrEnabled, initState);
             }
         );
 
@@ -1321,12 +1322,13 @@ private:
         std::string controlsUrl,
         int decoderPriority,
         bool nvidiaRtxSuperResolutionEnabled,
+        int nvidiaRtxSuperResolutionScale,
         bool nvidiaRtxVideoHdrEnabled,
         std::shared_ptr<InitializationState> initState
     ) {
         std::string failure;
         try {
-            initializeOnNativeUiThread(sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxVideoHdrEnabled);
+            initializeOnNativeUiThread(sourceUrl, headerLines, playWhenReady, initialPositionMs, controlsUrl, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxSuperResolutionScale, nvidiaRtxVideoHdrEnabled);
         } catch (const std::exception &error) {
             failure = error.what();
             cleanupUiResources();
@@ -1358,6 +1360,7 @@ private:
         const std::string &controlsUrl,
         int decoderPriority,
         bool nvidiaRtxSuperResolutionEnabled,
+        int nvidiaRtxSuperResolutionScale,
         bool nvidiaRtxVideoHdrEnabled
     ) {
         registerWindowClasses();
@@ -1410,7 +1413,7 @@ private:
         }
 
         startWebView(controlsUrl);
-        startMpv(sourceUrl, headerLines, playWhenReady, initialPositionMs, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxVideoHdrEnabled);
+        startMpv(sourceUrl, headerLines, playWhenReady, initialPositionMs, decoderPriority, nvidiaRtxSuperResolutionEnabled, nvidiaRtxSuperResolutionScale, nvidiaRtxVideoHdrEnabled);
         layoutNativeSubviews();
         if (!SetTimer(messageHwnd, NUVIO_TIMER_ID, 500, nullptr)) {
             throw std::runtime_error("Unable to start native player timer.");
@@ -1606,6 +1609,7 @@ private:
         long long initialPositionMs,
         int decoderPriority,
         bool nvidiaRtxSuperResolutionEnabled,
+        int nvidiaRtxSuperResolutionScale,
         bool nvidiaRtxVideoHdrEnabled
     ) {
         MpvApi &api = mpvApi();
@@ -1640,9 +1644,13 @@ private:
             setMpvOptionStringLocked("hwdec-codecs", "all");
 
             if (nvidiaRtxVideoProcessingEnabled) {
+                int clampedScale = nvidiaRtxSuperResolutionScale;
+                if (clampedScale < 2 || clampedScale > 4) {
+                    clampedScale = 2;
+                }
                 std::string d3d11vppFilter = "d3d11vpp";
                 if (nvidiaRtxSuperResolutionEnabled) {
-                    d3d11vppFilter += "=scale=2:scaling-mode=nvidia";
+                    d3d11vppFilter += "=scale=" + std::to_string(clampedScale) + ":scaling-mode=nvidia";
                 }
                 if (nvidiaRtxVideoHdrEnabled) {
                     d3d11vppFilter += nvidiaRtxSuperResolutionEnabled ? ":nvidia-true-hdr=yes" : "=nvidia-true-hdr=yes";
@@ -2261,6 +2269,7 @@ Java_com_nuvio_app_features_player_desktop_NativePlayerBridge_create(
     jstring controlsPageUrl,
     jint decoderPriority,
     jboolean nvidiaRtxSuperResolutionEnabled,
+    jint nvidiaRtxSuperResolutionScale,
     jboolean nvidiaRtxVideoHdrEnabled,
     jobject eventSink
 ) {
@@ -2297,6 +2306,7 @@ Java_com_nuvio_app_features_player_desktop_NativePlayerBridge_create(
             javaVm,
             decoderPriority,
             nvidiaRtxSuperResolutionEnabled == JNI_TRUE,
+            (int)nvidiaRtxSuperResolutionScale,
             nvidiaRtxVideoHdrEnabled == JNI_TRUE,
             eventSinkRef,
             eventMethod

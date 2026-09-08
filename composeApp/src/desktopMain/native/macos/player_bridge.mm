@@ -2549,6 +2549,7 @@ Java_com_nuvio_app_features_player_desktop_NativePlayerBridge_create(
     jstring controlsPageUrl,
     jint decoderPriority,
     jboolean nvidiaRtxSuperResolutionEnabled,
+    jint /*nvidiaRtxSuperResolutionScale*/,
     jboolean /*nvidiaRtxVideoHdrEnabled*/,
     jobject eventSink
 ) {

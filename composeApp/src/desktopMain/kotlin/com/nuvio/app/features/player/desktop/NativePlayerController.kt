@@ -43,6 +43,7 @@ internal typealias NativePlayerCreate = (
     String,
     Int,
     Boolean,
+    Int,
     Boolean,
     NativePlayerEventSink,
 ) -> Long
@@ -120,6 +121,7 @@ internal class NativePlayerController(
         initialPositionMs: Long,
         decoderPriority: Int,
         nvidiaRtxSuperResolutionEnabled: Boolean,
+        nvidiaRtxSuperResolutionScale: Int,
         nvidiaRtxVideoHdrEnabled: Boolean,
         onError: (String?) -> Unit,
     ) {
@@ -130,6 +132,7 @@ internal class NativePlayerController(
             initialPositionMs = initialPositionMs.coerceAtLeast(0L),
             decoderPriority = decoderPriority,
             nvidiaRtxSuperResolutionEnabled = nvidiaRtxSuperResolutionEnabled,
+            nvidiaRtxSuperResolutionScale = nvidiaRtxSuperResolutionScale,
             nvidiaRtxVideoHdrEnabled = nvidiaRtxVideoHdrEnabled,
             onError = onError,
         )
@@ -305,6 +308,7 @@ internal class NativePlayerController(
                         NativePlayerBridge.controlsPageUrl,
                         pending.decoderPriority,
                         pending.nvidiaRtxSuperResolutionEnabled,
+                        pending.nvidiaRtxSuperResolutionScale,
                         pending.nvidiaRtxVideoHdrEnabled,
                         eventSink,
                     ).also { if (it == 0L) error("Native player did not return a handle.") }
@@ -911,6 +915,7 @@ internal class NativePlayerController(
             initialPositionMs = pending.initialPositionMs,
             decoderPriority = pending.decoderPriority,
             nvidiaRtxSuperResolutionEnabled = pending.nvidiaRtxSuperResolutionEnabled,
+            nvidiaRtxSuperResolutionScale = pending.nvidiaRtxSuperResolutionScale,
             nvidiaRtxVideoHdrEnabled = pending.nvidiaRtxVideoHdrEnabled,
             onError = pending.onError,
         )
@@ -1143,6 +1148,7 @@ private data class PendingSource(
     val initialPositionMs: Long,
     val decoderPriority: Int,
     val nvidiaRtxSuperResolutionEnabled: Boolean,
+    val nvidiaRtxSuperResolutionScale: Int,
     val nvidiaRtxVideoHdrEnabled: Boolean,
     val onError: (String?) -> Unit,
 )
@@ -1454,6 +1460,10 @@ private fun PlayerControlsState.toControlsJson(isFullscreen: Boolean): String =
         appendJsonField("nvidiaRtxVideoHdrOnToastLabel", nvidiaRtxVideoHdrOnToastLabel)
         append(',')
         appendJsonField("nvidiaRtxVideoHdrOffToastLabel", nvidiaRtxVideoHdrOffToastLabel)
+        append(',')
+        appendJsonField("nvidiaRtxSuperResolutionScale", nvidiaRtxSuperResolutionScale)
+        append(',')
+        appendJsonField("nvidiaRtxSuperResolutionScaleToastFormat", nvidiaRtxSuperResolutionScaleToastFormat)
         append(',')
         appendJsonField("showSources", showSources)
         append(',')
