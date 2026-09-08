@@ -274,6 +274,8 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         nvidiaRtxVideoHdrEnabled = playerSettingsUiState.nvidiaRtxVideoHdrEnabled,
         nvidiaRtxVideoHdrOnToastLabel = stringResource(Res.string.player_nvidia_rtx_video_hdr_toast_on),
         nvidiaRtxVideoHdrOffToastLabel = stringResource(Res.string.player_nvidia_rtx_video_hdr_toast_off),
+        nvidiaRtxSuperResolutionScale = playerSettingsUiState.nvidiaRtxSuperResolutionScale,
+        nvidiaRtxSuperResolutionScaleToastFormat = stringResource(Res.string.player_nvidia_rtx_super_resolution_scale_toast_format),
         tapToUnlockLabel = stringResource(Res.string.compose_player_tap_to_unlock),
         playbackErrorTitle = stringResource(Res.string.compose_player_playback_error),
         playbackErrorMessage = errorMessage.orEmpty(),
@@ -1034,6 +1036,14 @@ private fun PlayerScreenRuntime.handlePlayerControlsEvent(type: String, value: D
             } else {
                 PlayerSettingsRepository.setNvidiaRtxVideoHdrEnabled(nextEnabled)
             }
+        }
+        "cycleNvidiaRtxSuperResolutionScale" -> {
+            val nextScale = when (playerSettingsUiState.nvidiaRtxSuperResolutionScale) {
+                2 -> 3
+                3 -> 4
+                else -> 2
+            }
+            PlayerSettingsRepository.setNvidiaRtxSuperResolutionScale(nextScale)
         }
         "parentalGuideComplete" -> {
             showParentalGuide = false

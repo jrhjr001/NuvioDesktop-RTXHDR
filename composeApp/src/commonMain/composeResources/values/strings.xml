@@ -1999,11 +1999,18 @@
     <string name="settings_playback_nvidia_rtx_video_section">NVIDIA RTX Video</string>
     <string name="settings_playback_nvidia_rtx_super_resolution">RTX Video Super Resolution</string>
     <string name="settings_playback_nvidia_rtx_super_resolution_desc">Upscale low-resolution video using NVIDIA RTX AI Super Resolution.</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale">RTX VSR Scale</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale_desc">How much RTX Video Super Resolution upscales by. Cycle this in the player with Ctrl+Shift+V.</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale_dialog">RTX VSR Scale</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale_2x">2x</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale_3x">3x</string>
+    <string name="settings_playback_nvidia_rtx_super_resolution_scale_4x">4x</string>
     <string name="settings_playback_nvidia_rtx_video_hdr">RTX Video HDR</string>
-    <string name="settings_playback_nvidia_rtx_video_hdr_desc">Convert SDR video to HDR in real time using NVIDIA RTX AI HDR.</string>
+    <string name="settings_playback_nvidia_rtx_video_hdr_desc">Convert SDR video to HDR in real time using NVIDIA RTX AI HDR. Toggle this in the player with Ctrl+Shift+H.</string>
     <string name="settings_playback_nvidia_rtx_video_hdr_requirements">Requires External Player to be off.</string>
     <string name="player_nvidia_rtx_video_hdr_toast_on">RTX Video HDR: On</string>
     <string name="player_nvidia_rtx_video_hdr_toast_off">RTX Video HDR: Off</string>
+    <string name="player_nvidia_rtx_super_resolution_scale_toast_format">RTX VSR: %sx</string>
     <!-- Playback settings iOS video output -->
     <string name="settings_playback_ios_video_output">iOS VIDEO OUTPUT</string>
     <string name="settings_playback_ios_hardware_decoder">Hardware decoder</string>

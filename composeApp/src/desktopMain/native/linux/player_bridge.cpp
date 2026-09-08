@@ -1529,6 +1529,7 @@ JNIEXPORT jlong JNICALL NP(create)(
     jobjectArray headerLines, jboolean playWhenReady, jlong initialPositionMs,
     jstring controlsPageUrl, jint decoderPriority,
     jboolean /*nvidiaRtxSuperResolutionEnabled*/,
+    jint /*nvidiaRtxSuperResolutionScale*/,
     jboolean /*nvidiaRtxVideoHdrEnabled*/, jobject eventSink) {
 
     // libmpv requires LC_NUMERIC=C (e.g. non-"C" locales with comma

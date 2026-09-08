@@ -89,6 +89,7 @@ internal actual object PlayerSettingsStorage {
     private const val iosSaturationKey = "ios_saturation"
     private const val iosGammaKey = "ios_gamma"
     private const val nvidiaRtxSuperResolutionEnabledKey = "nvidia_rtx_super_resolution_enabled"
+    private const val nvidiaRtxSuperResolutionScaleKey = "nvidia_rtx_super_resolution_scale"
     private const val nvidiaRtxVideoHdrEnabledKey = "nvidia_rtx_video_hdr_enabled"
     private val syncKeys = listOf(
         showLoadingOverlayKey,
@@ -97,6 +98,7 @@ internal actual object PlayerSettingsStorage {
         holdToSpeedEnabledKey,
         holdToSpeedValueKey,
         nvidiaRtxSuperResolutionEnabledKey,
+        nvidiaRtxSuperResolutionScaleKey,
         nvidiaRtxVideoHdrEnabledKey,
         touchGesturesEnabledKey,
         externalPlayerEnabledKey,
@@ -314,6 +316,8 @@ internal actual object PlayerSettingsStorage {
 
     actual fun loadNvidiaRtxSuperResolutionEnabled(): Boolean? = loadBoolean(nvidiaRtxSuperResolutionEnabledKey)
     actual fun saveNvidiaRtxSuperResolutionEnabled(enabled: Boolean) = saveBoolean(nvidiaRtxSuperResolutionEnabledKey, enabled)
+    actual fun loadNvidiaRtxSuperResolutionScale(): Int? = loadInt(nvidiaRtxSuperResolutionScaleKey)
+    actual fun saveNvidiaRtxSuperResolutionScale(scale: Int) = saveInt(nvidiaRtxSuperResolutionScaleKey, scale)
     actual fun loadNvidiaRtxVideoHdrEnabled(): Boolean? = loadBoolean(nvidiaRtxVideoHdrEnabledKey)
     actual fun saveNvidiaRtxVideoHdrEnabled(enabled: Boolean) = saveBoolean(nvidiaRtxVideoHdrEnabledKey, enabled)
 
@@ -405,6 +409,7 @@ internal actual object PlayerSettingsStorage {
         loadIosSaturation()?.let { put(iosSaturationKey, encodeSyncInt(it)) }
         loadIosGamma()?.let { put(iosGammaKey, encodeSyncInt(it)) }
         loadNvidiaRtxSuperResolutionEnabled()?.let { put(nvidiaRtxSuperResolutionEnabledKey, encodeSyncBoolean(it)) }
+        loadNvidiaRtxSuperResolutionScale()?.let { put(nvidiaRtxSuperResolutionScaleKey, encodeSyncInt(it)) }
         loadNvidiaRtxVideoHdrEnabled()?.let { put(nvidiaRtxVideoHdrEnabledKey, encodeSyncBoolean(it)) }
     }
 
@@ -484,6 +489,7 @@ internal actual object PlayerSettingsStorage {
         payload.decodeSyncInt(iosSaturationKey)?.let(::saveIosSaturation)
         payload.decodeSyncInt(iosGammaKey)?.let(::saveIosGamma)
         payload.decodeSyncBoolean(nvidiaRtxSuperResolutionEnabledKey)?.let(::saveNvidiaRtxSuperResolutionEnabled)
+        payload.decodeSyncInt(nvidiaRtxSuperResolutionScaleKey)?.let(::saveNvidiaRtxSuperResolutionScale)
         payload.decodeSyncBoolean(nvidiaRtxVideoHdrEnabledKey)?.let(::saveNvidiaRtxVideoHdrEnabled)
     }
 }

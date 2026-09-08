@@ -43,6 +43,7 @@ internal object NativePlayerBridge {
         controlsPageUrl: String,
         decoderPriority: Int,
         nvidiaRtxSuperResolutionEnabled: Boolean,
+        nvidiaRtxSuperResolutionScale: Int,
         nvidiaRtxVideoHdrEnabled: Boolean,
         eventSink: NativePlayerEventSink,
     ): Long
